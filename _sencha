@@ -1,0 +1,173 @@
+#compdef sencha
+
+typeset -A opt_args
+
+_sencha() {
+    local curcontext="$curcontext" state line
+
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'app:Perform various application build processes.'
+                'ant:Invoke Ant with helpful properties back to Sencha Cmd'
+                'help:Displays help for commands'
+            )
+            _describe -t commands 'sencha' subcommands
+        ;;
+
+        (options)
+            case $line[1] in
+
+                (app)
+                    __sencha-app
+                ;;
+
+                (ant)
+                    __sencha-ant
+                ;;
+
+            esac
+        ;;
+    esac
+}
+
+__sencha-app() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'build:Executes the build process for an application'
+                'clean:Cleans the application for a build'
+                'refresh:Updates the application metadata (aka "bootstrap") file'
+                'upgrade:Upgrade the current application to the specified SDK'
+                'watch:Watches an application for file system changes and rebuilds.'
+            )
+            _describe -t commands 'sencha app' subcommands
+        ;;
+
+        (options)
+            case $line[1] in
+
+                (build)
+                    _arguments \
+                        '--build[Selects the name of the build specified in the "builds" app.json set to use for the build]:build:__sencha-list-build-descriptor' \
+                        ':environment:__sencha-list-build-environment'
+
+                ;;
+            esac
+        ;;
+    esac
+}
+
+__sencha-ant() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments \
+        {-d,--debug}'[Enables Ant debug level messages]:' \
+        {-f,--file}'[The Ant file to execute(default is build.xml)]::ant_file:_files' \
+        '*'{-p,--props}'[One or more properties for the Ant script (name=value,...)]:prop_list:__sencha-ant-property' \
+        '*'{-t,--target}'[The target(s) to execute from the Ant script (comma separated)]:target_list:__sencha-list-ant-targets' \
+        {-v,--verbose}'[Enables Ant verbose level messages]:' \
+        ':ant_targets:__sencha-list-ant-targets'
+}
+
+__sencha-ant-property() {
+    if compset -P '*='; then
+        _wanted property-values expl 'property value' __sencha-ant-property-values ${${IPREFIX%=}#-D} && return 0
+    else
+        _wanted property-names expl 'property name' __sencha-ant-property-names -qS= && return 0
+    fi
+}
+
+__sencha-ant-property-names() {
+    local alternatives; alternatives=(
+        'ant-common-property-names:common property name:__sencha-ant-common-property-names -qS='
+    )
+
+    _alternative "${alternatives[@]}"
+}
+
+__sencha-ant-common-property-names() {
+    local properties
+    properties=(
+        'build.environment:Environment (developing,testing,production)'
+        'build.id:Build descriptor'
+    )
+
+    _describe -t 'ant-common-property-names' 'common property name' properties $@
+}
+
+__sencha-ant-property-values() {
+    local ret=1
+    setopt localoptions extendedglob
+    case $@[-1] in
+        (build.environment)
+            __sencha-list-build-environment && ret=0
+        ;;
+        (build.id)
+            __sencha-list-build-descriptor && ret=0
+        ;;
+    esac
+}
+
+__sencha-list-build-environment() {
+    local expl
+    declare -a build_env
+
+    build_env=(production testing native package)
+
+    _wanted build_env expl 'build_env' compadd $* - $build_env
+}
+
+__sencha-list-ant-targets() {
+    local expl
+    declare -a targets
+
+    targets=(
+        build
+        clean
+        init
+        js
+        page
+        refresh
+        resources
+        sass
+        slice
+        watch
+    )
+
+    _wanted sencha_ant_targets expl 'sencha_ant_targets' compadd $* - $targets
+}
+
+
+__sencha-list-build-descriptor() {
+    local expl
+    declare -a build_descr
+
+    # cat app.json | underscore extract 'builds' | underscore keys --outfmt text
+
+    build_descr=(${${(f)"$(_call_program descr cat app.json | underscore extract 'builds' | underscore keys --outfmt text )"}})
+
+    _wanted build expl 'build' compadd $* - $build_descr
+}
+
+
+
+
+
+_sencha "$@"
