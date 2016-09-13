@@ -16,6 +16,7 @@ _sencha() {
             subcommands=(
                 'app:Perform various application build processes.'
                 'ant:Invoke Ant with helpful properties back to Sencha Cmd'
+                'generate:Generates models, controllers, etc. or an entire application'
                 'help:Displays help for commands'
             )
             _describe -t commands 'sencha' subcommands
@@ -30,6 +31,10 @@ _sencha() {
 
                 (app)
                     __sencha-app
+                ;;
+
+                (generate)
+                    __sencha-generate
                 ;;
 
                 (help)
@@ -69,13 +74,104 @@ __sencha-app() {
 
                 (build)
                     _arguments \
-                        '--build[Selects the name of the build specified in the "builds" app.json set to use for the build]:build:__sencha-list-build-descriptor' \
+                        {--archive,-a}'[The directory path where all previous builds were stored.]:app_build_archive:_files' \
+                        {--build,-build}'[Selects the name of the build specified in the ''builds'' app.json set to use for the build]:app_build_buildenv:__sencha-list-build-descriptor' \
+                        {--clean,-c}'[Remove previous build output prior to executing build]:' \
+                        {--destination,-des}'[The directory to which the build output is written]:app_build_dest:_files' \
+                        {--development,-dev}'[Sets the build environment to: development]:' \
+                        {--environment,-e}'[The build environment, either ''development'', ''testing'' or ''production'']:app_build_env:__sencha-list-build-environment' \
+                        {--locale,-l}'[Selects the app.locale setting to use for the build]:app_build_locale:_files' \
+                        {--production,-pr}'[Sets the build environment to: production]:' \
+                        {--run,-r}'[Enables automatically running builds with the native packager]:' \
+                        {--testing,-te}'[Sets the build environment to: testing]:' \
+                        {--theme,-th}'[Selects the app.theme setting to use for the build]:app_build_theme' \
                         ':environment:__sencha-list-build-environment'
 
+                ;;
+
+                (upgrade)
+                    _arguments \
+                        {--backup,-b}'[Make a backup of application before upgrade]:' \
+                        {--noappjs,-noa}'[Disable upgrade of app.js]:' \
+                        {--noframework,-nof}'[Upgrade only the Sencha Cmd scaffolding and not the SDK]:' \
+                        {--path,-pa}'[The path to the framework to which to upgrade]::app_upgrade_framework_path:_files'
                 ;;
             esac
         ;;
     esac
+}
+
+
+__sencha-generate() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'app:Generates a starter application'
+                'controller:Generates a Controller for the current application'
+                'form:Generates a Form for the current application (Sencha Touch Specific)'
+                'model:Generates a Model for the current application'
+                'package:Generates a starter package'
+                'profile:Generates a Profile for the current application (Sencha Touch Specific)'
+                'theme:Generates a theme page for slice operations (Ext JS Specific)'
+                'view:Generates a View for the current application (Ext JS Specific)'
+                'workspace:Initializes a multi-app workspace'
+            )
+            _describe -t commands 'sencha generate' subcommands
+        ;;
+
+        (options)
+            case $line[1] in
+
+                (app)
+                    _arguments \
+                        {--controller-name,-c}'[The name of the default Controller]:generate_app_control_name:_files' \
+                        {--library,-l}'[the pre-built library to use (core or all). Default: core]:generate_app_library:(core all)' \
+                        {--name,-n}'[The name of the application to generate]:generate_app_name:_files' \
+                        {--path,-p}'[The path for the generated application]:generate_app_path:_files' \
+                        {--refresh,-r}'[Set to false to skip the "app refresh" of the generated app]:' \
+                        {--starter,-s}'[Overrides the default Starter App template directory]:generate_app_starter:_files' \
+                        {--template,-te}'[The name of the template to use]:generate_app_template:_files' \
+                        {--theme-name,-th}'[The name of the default Theme]:generate_app_theme:__generate-app-default-themes' \
+                        {--view-name,-v}'[The name of the default View]:generate_app_view:_files'
+                ;;
+            esac
+        ;;
+    esac
+}
+
+__generate-app-default-themes() {
+    local expl
+    declare -a default_themes
+
+    default_themes=(
+        theme-classic
+        theme-crisp
+        theme-crisp-touch
+        theme-gray
+        theme-neptune
+        theme-neptune-touch
+        theme-neutral
+        theme-triton
+        theme-blackberry
+        theme-cupertino
+        theme-ios
+        theme-material
+        theme-mountainview
+        theme-neptune
+        theme-triton
+        theme-windows
+    )
+
+    _wanted default_themes expl 'generate_app_default_themes' compadd $* - $default_themes
 }
 
 __sencha-ant() {
@@ -189,6 +285,7 @@ __sencha-help() {
                 'clean:Shows the help for the clean command'
                 'emulate:Shows the help for the emulate command'
                 'explain:Shows the help for the explain command'
+                'generate:Shows the help for the generate command'
                 'init:Shows the help for the init command'
                 'install:Shows the help for the install command'
                 'prepare:Shows the help for the prepare command'
@@ -203,7 +300,6 @@ __sencha-help() {
                 'config:Shows the help for the config command'
                 'js:Shows the help for the js command'
                 'switch:Shows the help for the switch command'
-                'upgrade:Shows the help for the upgrade command'
                 'which:Shows the help for the which command'
             )
             _describe -t commands 'sencha help' subcommands
@@ -214,6 +310,10 @@ __sencha-help() {
 
                 (app)
                     __sencha-help-app
+                ;;
+
+                (generate)
+                    __sencha-help-generate
                 ;;
             esac
         ;;
@@ -247,6 +347,34 @@ __sencha-help-app() {
                 'watch:Shows the help for the app watch command'
             )
             _describe -t commands 'sencha help app' subcommands
+        ;;
+    esac
+}
+
+__sencha-help-generate() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'app:Shows the help for the generate app command'
+                'controller:Shows the help for the generate controller command'
+                'form:Shows the help for the generate form command'
+                'model:Shows the help for the generate model command'
+                'package:Shows the help for the generate package command'
+                'profile:Shows the help for the generate profile command'
+                'theme:Shows the help for the generate theme command'
+                'view:Shows the help for the generate view command'
+                'workspace:Shows the help for the generate workspace command'
+            )
+            _describe -t commands 'sencha help generate' subcommands
         ;;
     esac
 }
