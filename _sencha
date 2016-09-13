@@ -24,12 +24,16 @@ _sencha() {
         (options)
             case $line[1] in
 
+                (ant)
+                    __sencha-ant
+                ;;
+
                 (app)
                     __sencha-app
                 ;;
 
-                (ant)
-                    __sencha-ant
+                (help)
+                    __sencha-help
                 ;;
 
             esac
@@ -52,6 +56,7 @@ __sencha-app() {
             subcommands=(
                 'build:Executes the build process for an application'
                 'clean:Cleans the application for a build'
+
                 'refresh:Updates the application metadata (aka "bootstrap") file'
                 'upgrade:Upgrade the current application to the specified SDK'
                 'watch:Watches an application for file system changes and rebuilds.'
@@ -166,7 +171,85 @@ __sencha-list-build-descriptor() {
     _wanted build expl 'build' compadd $* - $build_descr
 }
 
+__sencha-help() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
 
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'app:Shows the help for the app command'
+                'build:Shows the help for the build command'
+                'clean:Shows the help for the clean command'
+                'emulate:Shows the help for the emulate command'
+                'explain:Shows the help for the explain command'
+                'init:Shows the help for the init command'
+                'install:Shows the help for the install command'
+                'prepare:Shows the help for the prepare command'
+                'publish:Shows the help for the publish command'
+                'refresh:Shows the help for the refresh command'
+                'run:Shows the help for the run command'
+                'upgrade:Shows the help for the upgrade command'
+                'watch:Shows the help for the watch command'
+
+                'ant:Shows the help for the ant command'
+                'audit:Shows the help for the audit command'
+                'config:Shows the help for the config command'
+                'js:Shows the help for the js command'
+                'switch:Shows the help for the switch command'
+                'upgrade:Shows the help for the upgrade command'
+                'which:Shows the help for the which command'
+            )
+            _describe -t commands 'sencha help' subcommands
+        ;;
+
+        (options)
+            case $line[1] in
+
+                (app)
+                    __sencha-help-app
+                ;;
+            esac
+        ;;
+    esac
+}
+
+__sencha-help-app() {
+    local curcontext="$curcontext" state line
+    typeset -A opt_args
+
+    _arguments -C \
+        ':command:->command' \
+        '*::options:->options'
+
+    case $state in
+        (command)
+
+            local -a subcommands
+            subcommands=(
+                'build:Shows the help for the app build command'
+                'clean:Shows the help for the app clean command'
+                'emulate:Shows the help for the app emulate command'
+                'explain:Shows the help for the app explain command'
+                'init:Shows the help for the app init command'
+                'install:Shows the help for the app install command'
+                'prepare:Shows the help for the app prepare command'
+                'publish:Shows the help for the app publish command'
+                'refresh:Shows the help for the app refresh command'
+                'run:Shows the help for the app run command'
+                'upgrade:Shows the help for the app upgrade command'
+                'watch:Shows the help for the app watch command'
+            )
+            _describe -t commands 'sencha help app' subcommands
+        ;;
+    esac
+}
 
 
 
