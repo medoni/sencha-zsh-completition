@@ -141,7 +141,10 @@ __sencha-generate() {
                         {--starter,-s}'[Overrides the default Starter App template directory]:generate_app_starter:_files' \
                         {--template,-te}'[The name of the template to use]:generate_app_template:_files' \
                         {--theme-name,-th}'[The name of the default Theme]:generate_app_theme:__generate-app-default-themes' \
-                        {--view-name,-v}'[The name of the default View]:generate_app_view:_files'
+                        {--view-name,-v}'[The name of the default View]:generate_app_view:_files' \
+                        '-ext[Uses the Ext framework]:' \
+                        '-classic[Uses the classic toolkit]:' \
+                        '-modern[Uses the modern toolkit]:'
                 ;;
             esac
         ;;
